@@ -39,7 +39,7 @@ public class LocalTridentWordCount2 {
 			List<List<Object>> batch = this.batches.get(batchId);
 	        if(batch == null){
 	            batch = new ArrayList<List<Object>>();
-	            Collection<File> listFiles = FileUtils.listFiles(new File("d:\\test"), new String[]{"txt"}, true);
+	            Collection<File> listFiles = FileUtils.listFiles(new File("d:\\teststorm"), new String[]{"txt"}, true);
 	            for (File file : listFiles) {
 					try {
 						List<String> lines = FileUtils.readLines(file);
@@ -108,9 +108,11 @@ public class LocalTridentWordCount2 {
 		@Override
 		public void aggregate(Map<String, Integer> val, TridentTuple tuple,
 				TridentCollector collector) {
+			System.out.println("======聚合=========");
 			String word = tuple.getString(0);
 			val.put(word, (MapUtils.getInteger(val, word, 0))+1);//没有的话默认值为0 有的话在这个基础上加1
 			// MapUtils.getInteger(val, word, 0) 没有的话默认值0 有的话取出来这个值
+			//对这一批进行统计  在本例中 对每一个文件进行统计
 		}
 
 		@Override
@@ -126,11 +128,16 @@ public class LocalTridentWordCount2 {
 		HashMap<String, Integer> hashMap = new HashMap<String, Integer>();
 		@Override
 		public void execute(TridentTuple tuple, TridentCollector collector) {
-			Map<String, Integer> map = (Map<String, Integer>)tuple.getValueByField("map");
+			Map<String, Integer> map = (Map<String, Integer>)tuple.getValueByField("map");//只是对每一批进行求和
+			System.out.println("===============");
+			for (Entry<String, Integer> entry : map.entrySet()) {
+				System.out.println(entry);
+			}
+			//Map<String, Integer> map = (Map<String, Integer>)tuple.get(0);
 			for (Entry<String, Integer> entry : map.entrySet()) {
 				String word = entry.getKey();
-				Integer value = entry.getValue();
-				Integer count = hashMap.get(word);
+				Integer value = entry.getValue();//这一批map的统计
+				Integer count = hashMap.get(word);//加上总的map里面的 统计的其他批的
 				if(count==null){
 					count = 0;
 				}
@@ -138,7 +145,7 @@ public class LocalTridentWordCount2 {
 				hashMap.put(word, value+count);
 			}
 			Utils.sleep(1000);
-			System.out.println("===============");
+			System.out.println("====总Map===========");
 			for (Entry<String, Integer> entry : hashMap.entrySet()) {
 				System.out.println(entry);
 			}
