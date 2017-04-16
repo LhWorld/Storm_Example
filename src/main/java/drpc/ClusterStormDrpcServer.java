@@ -1,11 +1,14 @@
-package com.lihu;
+package drpc;
 
 import java.util.Map;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.LocalDRPC;
+import backtype.storm.StormSubmitter;
 import backtype.storm.drpc.LinearDRPCTopologyBuilder;
+import backtype.storm.generated.AlreadyAliveException;
+import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -13,9 +16,11 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import org.apache.log4j.Logger;
 
-public class LocalStormDrpc {
-	
+public class ClusterStormDrpcServer {
+	private static final Logger logger = Logger.getLogger(LocalStormDrpc.class);
+
 	public static class MyBolt extends BaseRichBolt{
 		private Map stormConf; 
 		private TopologyContext context;
@@ -32,6 +37,7 @@ public class LocalStormDrpc {
 		 */
 		public void execute(Tuple input) {
 			String value = input.getString(1);
+			logger.info("=======execute======"+value);
 			value = "hello1 "+value;
 			
 			this.collector.emit(new Values(input.getValue(0),value));
@@ -47,14 +53,15 @@ public class LocalStormDrpc {
 		LinearDRPCTopologyBuilder linearDRPCTopologyBuilder = new LinearDRPCTopologyBuilder("hello");
 		linearDRPCTopologyBuilder.addBolt(new MyBolt());
 		
-		LocalCluster localCluster = new LocalCluster();
-		LocalDRPC drpc = new LocalDRPC();
-		localCluster.submitTopology("drpc",new Config(), linearDRPCTopologyBuilder.createLocalTopology(drpc));
+		try {
+			StormSubmitter.submitTopology("drpc", new  Config(), linearDRPCTopologyBuilder.createRemoteTopology());
+		} catch (AlreadyAliveException e) {
+			e.printStackTrace();
+		} catch (InvalidTopologyException e) {
+			e.printStackTrace();
+		}
 		
 		
-		
-		String result = drpc.execute("hello", "storm");
-		System.err.println("客户端调用结果："+result);
 		
 		
 		

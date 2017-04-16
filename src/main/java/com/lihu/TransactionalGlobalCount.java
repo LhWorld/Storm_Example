@@ -118,7 +118,7 @@ public class TransactionalGlobalCount {
         newval.txid = _attempt.getTransactionId();
         if (val == null) {
           newval.count = _sum;
-        }
+        }//第一次
         else {
           newval.count = _sum + val.count;
         }
