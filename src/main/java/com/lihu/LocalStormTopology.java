@@ -1,13 +1,9 @@
 package com.lihu;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
-import backtype.storm.StormSubmitter;
-import backtype.storm.generated.AlreadyAliveException;
-import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -24,7 +20,7 @@ import backtype.storm.tuple.Values;
  * @author Administrator
  *
  */
-public class ClutserStormTopology {
+public class LocalStormTopology {
 	public static class DataSourceSpout extends BaseRichSpout{
 		private Map conf;
 		private TopologyContext context;
@@ -92,22 +88,11 @@ public class ClutserStormTopology {
 	public static void main(String[] args) {
 		TopologyBuilder topologyBuilder = new TopologyBuilder();
 		topologyBuilder.setSpout("spout_id", new DataSourceSpout());
-		topologyBuilder.setBolt("bolt_id", new Sumbolt()).shuffleGrouping("spout_id");
-		Map conf = new HashMap();
-		conf.put(Config.TOPOLOGY_WORKERS, 4);
-
-		if (args.length > 0) {
-			try {
-				StormSubmitter.submitTopology(args[0], conf, topologyBuilder.createTopology());
-			} catch (AlreadyAliveException e) {
-				e.printStackTrace();
-			} catch (InvalidTopologyException e) {
-				e.printStackTrace();
-			}
-		}else {
-			LocalCluster localCluster = new LocalCluster();
-			localCluster.submitTopology("mytopology", conf, topologyBuilder.createTopology());
-		}
+		topologyBuilder.setSpout("spout_id2", new DataSourceSpout());
+		topologyBuilder.setBolt("bolt_id", new Sumbolt()).shuffleGrouping("spout_id").shuffleGrouping("spout_id2");
+		
+		LocalCluster localCluster = new LocalCluster();
+		localCluster.submitTopology("topology", new Config(), topologyBuilder.createTopology());
 	}
 	
 	

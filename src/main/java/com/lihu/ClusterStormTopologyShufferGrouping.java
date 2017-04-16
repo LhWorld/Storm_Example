@@ -1,6 +1,5 @@
 package com.lihu;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import backtype.storm.Config;
@@ -24,7 +23,7 @@ import backtype.storm.tuple.Values;
  * @author Administrator
  *
  */
-public class ClutserStormTopology {
+public class ClusterStormTopologyShufferGrouping {
 	public static class DataSourceSpout extends BaseRichSpout{
 		private Map conf;
 		private TopologyContext context;
@@ -78,7 +77,7 @@ public class ClutserStormTopology {
 			//input.getInteger(0);
 			Integer value = input.getIntegerByField("num");
 			sum+=value;
-			System.out.println("sum:"+sum);
+			System.out.println("当前线程ID"+Thread.currentThread().getId()+"---value:"+value);
 		}
 
 		public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -92,22 +91,17 @@ public class ClutserStormTopology {
 	public static void main(String[] args) {
 		TopologyBuilder topologyBuilder = new TopologyBuilder();
 		topologyBuilder.setSpout("spout_id", new DataSourceSpout());
-		topologyBuilder.setBolt("bolt_id", new Sumbolt()).shuffleGrouping("spout_id");
-		Map conf = new HashMap();
-		conf.put(Config.TOPOLOGY_WORKERS, 4);
-
-		if (args.length > 0) {
-			try {
-				StormSubmitter.submitTopology(args[0], conf, topologyBuilder.createTopology());
-			} catch (AlreadyAliveException e) {
-				e.printStackTrace();
-			} catch (InvalidTopologyException e) {
-				e.printStackTrace();
-			}
-		}else {
-			LocalCluster localCluster = new LocalCluster();
-			localCluster.submitTopology("mytopology", conf, topologyBuilder.createTopology());
+		topologyBuilder.setBolt("bolt_id", new Sumbolt(),3).shuffleGrouping("spout_id");
+		
+		String simpleName = ClusterStormTopologyShufferGrouping.class.getSimpleName();
+		try {
+			StormSubmitter.submitTopology(simpleName, new Config(), topologyBuilder.createTopology());
+		} catch (AlreadyAliveException e) {
+			e.printStackTrace();
+		} catch (InvalidTopologyException e) {
+			e.printStackTrace();
 		}
+		
 	}
 	
 	

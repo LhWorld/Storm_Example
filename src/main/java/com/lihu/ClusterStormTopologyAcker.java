@@ -1,10 +1,8 @@
 package com.lihu;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import backtype.storm.Config;
-import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
@@ -24,7 +22,7 @@ import backtype.storm.tuple.Values;
  * @author Administrator
  *
  */
-public class ClutserStormTopology {
+public class ClusterStormTopologyAcker {
 	public static class DataSourceSpout extends BaseRichSpout{
 		private Map conf;
 		private TopologyContext context;
@@ -46,7 +44,8 @@ public class ClutserStormTopology {
 		int i=0;
 		public void nextTuple() {
 			System.out.println("spout:"+i);
-			this.collector.emit(new Values(i++));
+			//emit(0,0)
+			this.collector.emit(new Values(i++),i-1);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -59,6 +58,17 @@ public class ClutserStormTopology {
 		public void declareOutputFields(OutputFieldsDeclarer declarer) {
 			declarer.declare(new Fields("num"));
 		}
+		@Override
+		public void ack(Object msgId) {
+			System.out.println("调用了ack方法："+msgId);
+		}
+		@Override
+		public void fail(Object msgId) {
+			System.out.println("调用了fail方法："+msgId);
+		}
+		
+		
+		
 	}
 	
 	
@@ -73,12 +83,21 @@ public class ClutserStormTopology {
 			this.context = context;
 			this.collector = collector;
 		}
-		int sum = 0;
 		public void execute(Tuple input) {
 			//input.getInteger(0);
 			Integer value = input.getIntegerByField("num");
-			sum+=value;
-			System.out.println("sum:"+sum);
+			
+			if(value>=10 && value<=20){
+				this.collector.ack(input);
+			}else{
+				this.collector.fail(input);
+			}
+			/*try{
+				//TODO---
+				this.collector.ack(input);
+			}catch(Exception e){
+				this.collector.fail(input);
+			}*/
 		}
 
 		public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -92,22 +111,17 @@ public class ClutserStormTopology {
 	public static void main(String[] args) {
 		TopologyBuilder topologyBuilder = new TopologyBuilder();
 		topologyBuilder.setSpout("spout_id", new DataSourceSpout());
-		topologyBuilder.setBolt("bolt_id", new Sumbolt()).shuffleGrouping("spout_id");
-		Map conf = new HashMap();
-		conf.put(Config.TOPOLOGY_WORKERS, 4);
-
-		if (args.length > 0) {
-			try {
-				StormSubmitter.submitTopology(args[0], conf, topologyBuilder.createTopology());
-			} catch (AlreadyAliveException e) {
-				e.printStackTrace();
-			} catch (InvalidTopologyException e) {
-				e.printStackTrace();
-			}
-		}else {
-			LocalCluster localCluster = new LocalCluster();
-			localCluster.submitTopology("mytopology", conf, topologyBuilder.createTopology());
+		topologyBuilder.setBolt("bolt_id", new Sumbolt(),2).allGrouping("spout_id");
+		
+		String simpleName = ClusterStormTopologyAcker.class.getSimpleName();
+		try {
+			StormSubmitter.submitTopology(simpleName, new Config(), topologyBuilder.createTopology());
+		} catch (AlreadyAliveException e) {
+			e.printStackTrace();
+		} catch (InvalidTopologyException e) {
+			e.printStackTrace();
 		}
+		
 	}
 	
 	
