@@ -38,7 +38,7 @@ public class LocalTridentMerger {
 		
 		tridentTopology.merge(newStream,newStream1)
 		.each(new Fields("sentence"), new PrintBolt(), new Fields(""));//流聚合
-		
+		//接受两个流的数据
 		LocalCluster localCluster = new LocalCluster();
 		localCluster.submitTopology("tridentTopology",new Config(), tridentTopology.build());
 	}
