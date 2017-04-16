@@ -3,6 +3,7 @@ package com.lihu;
 import java.util.Map;
 
 import backtype.storm.Config;
+import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
@@ -113,14 +114,16 @@ public class ClusterStormTopologyAcker {
 		topologyBuilder.setSpout("spout_id", new DataSourceSpout());
 		topologyBuilder.setBolt("bolt_id", new Sumbolt(),2).allGrouping("spout_id");
 		
-		String simpleName = ClusterStormTopologyAcker.class.getSimpleName();
-		try {
-			StormSubmitter.submitTopology(simpleName, new Config(), topologyBuilder.createTopology());
-		} catch (AlreadyAliveException e) {
-			e.printStackTrace();
-		} catch (InvalidTopologyException e) {
-			e.printStackTrace();
-		}
+//		String simpleName = ClusterStormTopologyAcker.class.getSimpleName();
+//		try {
+//			StormSubmitter.submitTopology(simpleName, new Config(), topologyBuilder.createTopology());
+//		} catch (AlreadyAliveException e) {
+//			e.printStackTrace();
+//		} catch (InvalidTopologyException e) {
+//			e.printStackTrace();
+//		}
+		LocalCluster localCluster = new LocalCluster();
+		localCluster.submitTopology("mytopology", new Config(), topologyBuilder.createTopology());
 		
 	}
 	
