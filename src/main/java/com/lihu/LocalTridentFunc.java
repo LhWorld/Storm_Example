@@ -29,7 +29,7 @@ public class LocalTridentFunc {
 		spout.setCycle(true);
 		
 		TridentTopology tridentTopology = new TridentTopology();
-		tridentTopology.newStream("spout_id", spout)
+		tridentTopology.newStream("spout_id", spout) //new Stream 是Spout   each是bolt的设置
 		.each(new Fields("sentence"), new PrintBolt(), new Fields(""));//设置一个Spout又设置一个Bolt 第三个参数后面没有接受 所以不需要指定
 		
 		LocalCluster localCluster = new LocalCluster();
