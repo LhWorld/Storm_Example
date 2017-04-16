@@ -1,4 +1,4 @@
-package com.lihu;
+package trident;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;

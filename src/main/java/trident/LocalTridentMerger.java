@@ -1,16 +1,18 @@
-package com.lihu;
+package trident;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import storm.trident.Stream;
 import storm.trident.TridentTopology;
+import storm.trident.operation.BaseFilter;
 import storm.trident.operation.BaseFunction;
 import storm.trident.operation.TridentCollector;
 import storm.trident.testing.FixedBatchSpout;
 import storm.trident.tuple.TridentTuple;
 
-public class LocalTridentFunc {
+public class LocalTridentMerger {
 	
 	public static class PrintBolt extends BaseFunction{
 
@@ -24,13 +26,18 @@ public class LocalTridentFunc {
 	}
 	
 	
+	
 	public static void main(String[] args) {
 		FixedBatchSpout spout  = new FixedBatchSpout(new Fields("sentence"), 1, new Values(1));
-		spout.setCycle(true);
+		spout.setCycle(false);
 		
 		TridentTopology tridentTopology = new TridentTopology();
-		tridentTopology.newStream("spout_id", spout) //new Stream 是Spout   each是bolt的设置
-		.each(new Fields("sentence"), new PrintBolt(), new Fields(""));//设置一个Spout又设置一个Bolt 第三个参数后面没有接受 所以不需要指定
+		Stream newStream = tridentTopology.newStream("spout_id", spout);
+		Stream newStream1 = tridentTopology.newStream("spout_id1", spout);
+		
+		
+		tridentTopology.merge(newStream,newStream1)
+		.each(new Fields("sentence"), new PrintBolt(), new Fields(""));
 		
 		LocalCluster localCluster = new LocalCluster();
 		localCluster.submitTopology("tridentTopology",new Config(), tridentTopology.build());

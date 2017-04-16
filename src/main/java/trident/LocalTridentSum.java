@@ -1,4 +1,4 @@
-package com.lihu;
+package trident;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ public class LocalTridentSum {
 		HashMap<Long, List<List<Object>>> batches = new HashMap<Long, List<List<Object>>>();
 		@Override
 		public void open(Map conf, TopologyContext context) {
-			
+
 		}
 		int i=0;
 		@Override
