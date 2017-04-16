@@ -109,7 +109,7 @@ public class LocalTridentWordCount2 {
 		public void aggregate(Map<String, Integer> val, TridentTuple tuple,
 				TridentCollector collector) {
 			String word = tuple.getString(0);
-			val.put(word, MapUtils.getInteger(val, word, 0)+1);//没有的话默认值为0 有的话在这个基础上加1
+			val.put(word, (MapUtils.getInteger(val, word, 0))+1);//没有的话默认值为0 有的话在这个基础上加1
 			// MapUtils.getInteger(val, word, 0) 没有的话默认值0 有的话取出来这个值
 		}
 
