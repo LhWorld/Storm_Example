@@ -32,7 +32,7 @@ public class TridentWordCount {
   }
 
   public static StormTopology buildTopology(LocalDRPC drpc) {
-    FixedBatchSpout spout = new FixedBatchSpout(new Fields("sentence"), 3, new Values("the cow jumped over the moon"),
+    FixedBatchSpout spout = new FixedBatchSpout(new Fields("sentence"), 3, new Values("the cow jumped over the moon"),//固定大小的
         new Values("the man went to the store and bought some candy"), new Values("four score and seven years ago"),
         new Values("how many apples can you eat"), new Values("to be or not to be the person"));
     spout.setCycle(true);
@@ -54,7 +54,7 @@ public class TridentWordCount {
     if (args.length == 0) {
       LocalDRPC drpc = new LocalDRPC();
       LocalCluster cluster = new LocalCluster();
-      cluster.submitTopology("wordCounter", conf, buildTopology(drpc));
+      cluster.submitTopology("wordCounter", conf, buildTopology(drpc));//发布服务器端
       for (int i = 0; i < 100; i++) {
         System.out.println("DRPC RESULT: " + drpc.execute("words", "cat the dog jumped"));
         Thread.sleep(1000);
