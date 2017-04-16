@@ -61,7 +61,7 @@ public class LocalTridentSum {
 		@Override
 		public Fields getOutputFields() {
 			return new Fields("sentence");
-		}
+		}//输出字段
 		
 	}
 	
@@ -71,6 +71,7 @@ public class LocalTridentSum {
 		int sum = 0;
 		@Override
 		public void execute(TridentTuple tuple, TridentCollector collector) {
+			System.out.println("value："+tuple.getInteger(0));
 			Integer value = tuple.getInteger(0);
 			sum+= value;
 			System.out.println("和为："+sum);
