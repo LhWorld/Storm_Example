@@ -26,11 +26,11 @@ public class LocalTridentFunc {
 	
 	public static void main(String[] args) {
 		FixedBatchSpout spout  = new FixedBatchSpout(new Fields("sentence"), 1, new Values(1));
-		spout.setCycle(false);
+		spout.setCycle(true);
 		
 		TridentTopology tridentTopology = new TridentTopology();
 		tridentTopology.newStream("spout_id", spout)
-		.each(new Fields("sentence"), new PrintBolt(), new Fields(""));
+		.each(new Fields("sentence"), new PrintBolt(), new Fields(""));//设置一个Spout又设置一个Bolt 第三个参数后面没有接受 所以不需要指定
 		
 		LocalCluster localCluster = new LocalCluster();
 		localCluster.submitTopology("tridentTopology",new Config(), tridentTopology.build());
